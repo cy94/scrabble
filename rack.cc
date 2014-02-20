@@ -1,11 +1,13 @@
 // rack.cc
 
 #include<iostream>
+#include<iomanip>
 #include<string>
 #include<cassert>
 #include "tile.h"
 #include "rack.h"
 #include "bag.h"
+#include "colors.h"
 using namespace std;
 
 Rack::Rack()
@@ -45,26 +47,37 @@ Rack::~Rack()
 void Rack::show() const
 {
 	for(int i=0; i<7; i++)
-		cout << "- ";
+		cout << "---";
 	cout << endl;
 	
 	for(int i=0; i<7; i++)
 	{
 		if(tiles[i] != nullptr)
 		{
-			cout << tiles[i]->getLetter();
+			cout << " " << tiles[i]->getLetter() << " ";
 		}
 		else
 		{
-			cout << " ";
+			cout << "   ";
 		}
-		
-		cout << " ";
 	}
 	cout << endl;
 	
 	for(int i=0; i<7; i++)
-		cout << "- ";
+	{
+		if(tiles[i] != nullptr)
+		{
+			cout << BOLDRED << setw(2) << tiles[i]->getScore() << " " << RESET;
+		}
+		else
+		{
+			cout << "   ";
+		}
+	}
+	cout << endl;
+	
+	for(int i=0; i<7; i++)
+		cout << "---";
 	cout << endl;
 }
 
@@ -136,7 +149,7 @@ Tile* Rack::getTile(char c)
 
 void Rack::selfTest() const
 {
-	cout << "Testing rack  ... ";
+	//cout << "Testing rack  ... ";
 	
 	int n = 0;
 	for(int i=0; i<7; i++)
@@ -147,7 +160,7 @@ void Rack::selfTest() const
 			tiles[i]->selfTest();
 		}
 	}
-	cout << "passed" << endl;
+	//cout << "passed" << endl;
 }
 
 bool Rack::hasTile(char letter)

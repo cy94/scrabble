@@ -12,80 +12,19 @@ using namespace std;
 Bag::Bag():
 	numTiles(100)
 {
-	int currentTile = 0;
 	//random picking of tiles
 	srand(time(nullptr));
 	
-	//blank tiles
-	for(int i=0; i<2; i++)
-	{
-		tiles[currentTile++] = new Tile(' ', 0);
-	}
+	const char letters[] = {' ','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
+	const int  counts[]  = {2,9,2,2,4,12,2,3,2,9,1,1,4,2,6,8,2,1,6,4,6,4,2,2,1,2,1};
+	const int points[]   = {0,1,3,3,2,1,4,2,4,1,8,5,1,3,1,1,3,10,1,1,1,1,4,4,8,4,10};
+	//~ const int points[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 	
-	//e tiles
-	for(int i=0; i<12; i++)
-	{
-		tiles[currentTile++] = new Tile('e', 1);
-	}
 	
-	//a and i tiles
-	for(int i=0; i<9; i++)
-	{
-		tiles[currentTile++] = new Tile('a', 1);
-		tiles[currentTile++] = new Tile('i', 1);
-	}
-	
-	//o tiles
-	for(int i=0; i<8; i++)
-	{
-		tiles[currentTile++] = new Tile('o', 1);
-	}
-	
-	//n,r,t tiles
-	for(int i=0; i<6; i++)
-	{
-		tiles[currentTile++] = new Tile('n', 1);
-		tiles[currentTile++] = new Tile('r', 1);
-		tiles[currentTile++] = new Tile('t', 1);
-	}
-	
-	//l,s,u,d tiles
-	for(int i=0; i<4; i++)
-	{
-		tiles[currentTile++] = new Tile('l', 1);
-		tiles[currentTile++] = new Tile('s', 1);
-		tiles[currentTile++] = new Tile('u', 1);
-		tiles[currentTile++] = new Tile('d', 2);
-	}
-	
-	//g tiles
-	for(int i=0; i<3; i++)
-	{
-		tiles[currentTile++] = new Tile('g', 2);
-	}
-	
-	//b,c,m,p,f,h,v,w,y tiles
-	for(int i=0; i<2; i++)
-	{
-		tiles[currentTile++] = new Tile('b', 3);
-		tiles[currentTile++] = new Tile('c', 3);
-		tiles[currentTile++] = new Tile('m', 3);
-		tiles[currentTile++] = new Tile('p', 3);
-		
-		tiles[currentTile++] = new Tile('f', 4);
-		tiles[currentTile++] = new Tile('h', 4);
-
-		tiles[currentTile++] = new Tile('v', 4);
-		tiles[currentTile++] = new Tile('w', 4);
-		tiles[currentTile++] = new Tile('y', 4);
-	}
-	
-	//other tiles - single
-	tiles[currentTile++] = new Tile('k', 5);
-	tiles[currentTile++] = new Tile('j', 8);
-	tiles[currentTile++] = new Tile('x', 8);
-	tiles[currentTile++] = new Tile('q', 10);
-	tiles[currentTile++] = new Tile('z', 10);
+	int n = 0;
+	for(int i=0; i<27; i++)
+		for(int j=0; j<counts[i]; j++)
+			tiles[n++] = new Tile(letters[i], points[i]);
 	
 	selfTest();
 }
@@ -136,10 +75,10 @@ void Bag::reset()
 
 void Bag::selfTest() const
 {
-	cout << "Testing bag   ... ";
+	//cout << "Testing bag   ... ";
 	for(int i=0; i<numTiles; i++)
 		tiles[i]->selfTest();
-	cout << "passed" << endl;
+	//cout << "passed" << endl;
 }
 
 void Bag::addTile(Tile* t) 

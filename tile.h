@@ -14,11 +14,16 @@ private:
 public:
 	Tile(char c, int s);
 	~Tile();
+	
 	void show() const;
-	void setSquare(Square* sq);
-	char getLetter() const;
-	void selfTest() const;
 	Square* showSquare() const;
+	
+	void setSquare(Square* sq);
+	
+	char getLetter() const;
+	int getScore() const;
+	void selfTest() const;
+	
 };
 
 #endif

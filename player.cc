@@ -9,6 +9,7 @@
 #include "board.h"
 #include "tile.h"
 #include "rack.h"
+#include "errorcodes.h"
 
 using namespace std;
 
@@ -20,7 +21,6 @@ Player::Player(string s, Board& b, Bag& bg):
 {
 	rack = new Rack;
 	
-	board.addToSquare(112 , bag.getTile());
 	fillRack();
 	
 }
@@ -37,118 +37,162 @@ void Player::selfTest() const
 	bag.selfTest();
 }
 
-vector<string> Player::placeLetters(string letters, int index, direction dir)
+bool Player::canPlaceLetters(std::string letters, int index, direction dir)
 {
-	vector<string> words;
-	bool inDirection = false;
-	
 	//check if direction is ok
-	if(dir == NONE)
+	if(dir == NODIR)
 	{
 		cout << "Direction wrong" << endl;
-		return words;
+		return false;
 	}
 		
 	//word too long?
 	if(letters.size() > 7)
 	{
 		cout << "Word too long" << endl;
-		return words;
+		return false;
 	}
 		
 	// check if all letters are in rack
 	if(!rack->hasChars(letters))
 	{
 		cout << "Dont have tiles" << endl;
-		return words;
+		return false;
+	}
+	
+	if(index < 0 || index > 224)
+	{
+		cout << "Invalid index" << endl;
+		return false;
 	}
 	
 	if(!board.canPlaceLetters(letters, index, dir))
 	{
 		cout << "Cannot place letters" << endl;
-		return words;
+		return false;
 	}
 	
-	int tempndx;
-	string str1, str2;
-	string mainstr;
+	return true;
+}
+
+struct move Player::placeLetters(string letters, int index, direction dir)
+{
+	struct move m;
+	int temp, mainScore = 0, mainMultiplier = 1, current, tempScore;
+	unsigned int pos = 0;
+	string mainStr = "", str1, str2;
 	
-	for(auto c : letters)
+	//check behind for letters
+	if(dir == HORIZONTAL) //left
 	{
-		//already has a tile
-		while(board.getTile(index)) //const method!
+		temp = index-1;
+		while(temp/15 == index/15 && board.getTile(temp))
 		{
-			inDirection = true;
-			mainstr += board.getTile(index)->getLetter(); //string along direction of placing
-			//change index	
-			if(dir == 0) //right
-				index++;	
-			else         //down
-				index += 15;	
+			mainScore += board.getTile(temp)->getScore();
+			mainStr = board.getTile(temp)->getLetter() + mainStr;
+			temp--;
 		}
-		
-		board.addToSquare(index, rack->getTile(c));
-		mainstr += c; //string along direction of placing
-		
-		if(dir == HORIZONTAL) //possible words below and above
-		{
-			tempndx = index-15;
-			str1 = "";
-			str1 += c;
-			
-			while(tempndx/15 != 0 && board.getTile(tempndx)) //above
-			{
-				str1 = board.getTile(tempndx)->getLetter() + str1; // add char in other order!
-				tempndx -= 15;
-			}
-			
-			tempndx = index+15;
-			str2 = "";
-			
-			while(tempndx/15 != 15 && board.getTile(tempndx)) //below
-			{
-				str2 += board.getTile(tempndx)->getLetter();
-				tempndx += 15;
-			}
-			
-			if(str1.size() + str2.size() > 1)
-				words.push_back(str1 + str2);
-		}
-		else                 //possible words left and right
-		{
-			tempndx = index-1;
-			str1 = "";
-			str1 += c;
-			
-			while(tempndx%15 != 0 && board.getTile(tempndx)) //left
-			{
-				str1 = board.getTile(tempndx)->getLetter() + str1; // add char in other order!
-				tempndx -= 1;
-			}
-			
-			tempndx = index+1;
-			str2 = "";
-			
-			while(tempndx%15 != 14 && board.getTile(tempndx)) //right
-			{
-				str2 += board.getTile(tempndx)->getLetter();
-				tempndx += 1;
-			}
-			
-			if(str1.size() + str2.size() > 1)
-				words.push_back(str1 + str2);
-		}
-		//change index	
-		if(dir == 0) //right
-			index++;	
-		else         //down
-			index += 15;	
 	}
-	if(inDirection) //previous char on board along this direction
-		words.push_back(mainstr);
+	else //below
+	{
+		temp = index-15;
+		while(temp >= 0 && board.getTile(temp))
+		{
+			mainScore += board.getTile(temp)->getScore();
+			mainStr = board.getTile(temp)->getLetter() + mainStr;
+			temp-=15;
+		}
+	}
+	
+	//start placing
+	current = index;
+	while(1)
+	{
+		if(current > 224 || (dir == HORIZONTAL && (current/15 != index/15))) //out of board
+			break;
+			
+		if(board.getTile(current))
+		{
+			mainScore += board.getTile(current)->getScore();
+			mainStr += board.getTile(current)->getLetter();
+		}
+		else if(pos < letters.size())//place letter
+		{
+			Tile* t = rack->getTile(letters[pos]);
+			pos++;
+			premium p = board.getPremium(current);
+			switch(p)
+			{
+				case DOUBLE_LETTER: mainScore += t->getScore()*2; break;
+				case TRIPLE_LETTER: mainScore += t->getScore()*3; break;
+				case DOUBLE_WORD: mainScore += t->getScore(); mainMultiplier*=2; break;
+				case TRIPLE_WORD: mainScore += t->getScore(); mainMultiplier*=3; break;
+				case NONE: mainScore += t->getScore(); break;
+			}
+			board.addToSquare(current, t);
+			mainStr += t->getLetter();
+			
+			tempScore = t->getScore();
+			str1 = ""; str1 += t->getLetter();
+			str2 = ""; 
+			
+			//after placing a letter, move l/r/u/d and make words, add score
+			if(dir == HORIZONTAL)
+			{
+				//up
+				temp = current-15;
+				while(temp >= 0 && board.getTile(temp))
+				{
+					tempScore += board.getTile(temp)->getScore();
+					str1 = board.getTile(temp)->getLetter() + str1; 
+					temp -= 15;
+				}
+				//down
+				temp = current+15;
+				while(temp <= 224 && board.getTile(temp))
+				{
+					tempScore += board.getTile(temp)->getScore();
+					str2 += board.getTile(temp)->getLetter(); 
+					temp += 15;
+				}
+			}
+			else
+			{
+				//left
+				temp = current-1;
+				while(temp/15 == current/15 && board.getTile(temp))
+				{
+					tempScore += board.getTile(temp)->getScore();
+					str1 = board.getTile(temp)->getLetter() + str1; 
+					temp--;
+				}
+				//right
+				temp = current+1;
+				while(temp/15 == current/15 && board.getTile(temp))
+				{
+					tempScore += board.getTile(temp)->getScore();
+					str2 += board.getTile(temp)->getLetter(); 
+					temp++;
+				}
+			}
+			if(str1.size() + str2.size() > 1)
+			{
+				m.words.push_back(str1 + str2);
+				m.scores.push_back(tempScore);
+			}
+		}
+		else break;
 		
+		if(dir == HORIZONTAL) current++;
+		else current += 15;
+	}
+	
+	m.words.push_back(mainStr);
+	m.scores.push_back(mainScore * mainMultiplier);
+	m.placedletters = letters;
+	
 	selfTest();
-	return words;
+	return m;
 }
 
 void Player::fillRack()
@@ -171,14 +215,27 @@ void Player::playTurn()
 	char dir;
 
 	getInput( letterString, locationNdx, dir );
-	vector<string> words = placeLetters(letterString, locationNdx, charToDirection(dir));
 	
-	cout << "Possible words: "<< endl;
-	for(auto word: words)
+	if(!canPlaceLetters(letterString, locationNdx, charToDirection(dir)))
 	{
-		cout << "-->" << word << endl;
+		cout << "Cannot place" << endl;
+		return;
 	}
+	
+	cout << "Word can be placed" << endl;	
+	struct move m = placeLetters(letterString, locationNdx, charToDirection(dir));
+
+	int score = 0;
+	cout << "Possible words: "<< endl;
+	for(unsigned int i=0; i<m.words.size(); i++)
+	{
+		cout << " --> " << m.words[i] << " " << m.scores[i] << endl;
+		score += m.scores[i];
+	}
+	cout << "Total score: " << score << endl;
 	fillRack();
+	
+	moves.push_back( m );
 	
 	selfTest();
 }
@@ -191,7 +248,7 @@ direction Player::charToDirection(char c)
 		case 'v':
 			return VERTICAL;
 		default:
-			return NONE;
+			return NODIR;
 	}
 }
 

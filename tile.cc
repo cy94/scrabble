@@ -35,6 +35,11 @@ char Tile::getLetter() const
 	return letter;
 }
 
+int Tile::getScore() const
+{
+	return score;
+}
+
 Square* Tile::showSquare() const
 {
 	return square;

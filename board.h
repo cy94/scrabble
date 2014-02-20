@@ -4,7 +4,8 @@
 #define BOARD_H
 
 #include<iostream>
-class Square;
+#include "square.h" //for enum
+
 class Tile;
 class Bag;
 
@@ -16,6 +17,8 @@ private:
 	static int getX(int);
 	static int getY(int);
 	static int getI(int, int);
+	
+	mutable bool firstword; //used in canPlaceLetters
 public:
 	Board();
 	~Board();
@@ -28,7 +31,11 @@ public:
 	bool canPlaceLetters(std::string letters, int index, int dir) const;
 	void setupBoard(Bag* bag, const char* rows[]);
 	
+	premium getPremium(int index);
+	
 	void selfTest() const;
+	
+	bool firstWord() const { return firstword; }
 	
 	
 };

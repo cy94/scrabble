@@ -12,7 +12,14 @@ class Bag;
 class Board;
 class Tile; // needed?
 
-enum direction{HORIZONTAL, VERTICAL, NONE};
+
+struct move{
+	std::string placedletters;
+	std::vector<std::string> words;
+	std::vector<int> scores;
+};
+
+enum direction{HORIZONTAL, VERTICAL, NODIR};
 
 class Player{
 private:
@@ -23,7 +30,10 @@ private:
 	Board& board;
 	Bag&   bag;
 	
-	std::vector<std::string> placeLetters(std::string letters, int index, direction dir);
+	std::vector<struct move> moves;
+	
+	struct move placeLetters(std::string letters, int index, direction dir);
+	bool canPlaceLetters(std::string letters, int index, direction dir);
 	void getInput( std::string& letters, int& locationNdx, char& direction );
 	void fillRack();
 	
@@ -38,4 +48,5 @@ public:
 	void playTurn();
 };
 
+	
 #endif
