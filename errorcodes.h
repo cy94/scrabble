@@ -1,5 +1,8 @@
 // errorcodes.h
 
+#ifndef ERRORCODES_H
+#define ERRORCODES_H
+
 // Index is within board but not allowed as per rules
 #define ERR01 "INVALID-TILE-POSITION"
 
@@ -20,3 +23,5 @@
 
 // Invalid direction (other than H or V)
 #define ERR07 "INVALID-DIRECTION"
+
+#endif

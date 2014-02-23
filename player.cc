@@ -78,7 +78,7 @@ bool Player::canPlaceLetters(std::string letters, int index, direction dir)
 struct move Player::placeLetters(string letters, int index, direction dir)
 {
 	struct move m;
-	int temp, mainScore = 0, mainMultiplier = 1, current, tempScore;
+	int temp, mainScore = 0, mainMultiplier = 1, current, tempScore, tempMultiplier;
 	unsigned int pos = 0;
 	string mainStr = "", str1, str2;
 	
@@ -93,7 +93,7 @@ struct move Player::placeLetters(string letters, int index, direction dir)
 			temp--;
 		}
 	}
-	else //below
+	else //above
 	{
 		temp = index-15;
 		while(temp >= 0 && board.getTile(temp))
@@ -121,22 +121,24 @@ struct move Player::placeLetters(string letters, int index, direction dir)
 			Tile* t = rack->getTile(letters[pos]);
 			pos++;
 			premium p = board.getPremium(current);
-			switch(p)
-			{
-				case DOUBLE_LETTER: mainScore += t->getScore()*2; break;
-				case TRIPLE_LETTER: mainScore += t->getScore()*3; break;
-				case DOUBLE_WORD: mainScore += t->getScore(); mainMultiplier*=2; break;
-				case TRIPLE_WORD: mainScore += t->getScore(); mainMultiplier*=3; break;
-				case NONE: mainScore += t->getScore(); break;
+			switch(p){
+				case DOUBLE_LETTER: tempScore = t->getScore()*2; tempMultiplier = 1; break;
+				case TRIPLE_LETTER: tempScore = t->getScore()*3; tempMultiplier = 1;  break;
+				case DOUBLE_WORD: tempScore = t->getScore(); tempMultiplier = 2; break;
+				case TRIPLE_WORD: tempScore = t->getScore(); tempMultiplier = 3; break;
+				case NONE: tempScore = t->getScore(); tempMultiplier = 1; break;
 			}
-			board.addToSquare(current, t);
+			mainScore += tempScore;
+			mainMultiplier *= tempMultiplier;
+			
+			board.addToSquare(current, t); //add tile!
 			mainStr += t->getLetter();
 			
-			tempScore = t->getScore();
+			//get the word containing this letter
 			str1 = ""; str1 += t->getLetter();
 			str2 = ""; 
 			
-			//after placing a letter, move l/r/u/d and make words, add score
+			//after placing a letter, move l/r/u/d and make word, add score
 			if(dir == HORIZONTAL)
 			{
 				//up
@@ -178,7 +180,7 @@ struct move Player::placeLetters(string letters, int index, direction dir)
 			if(str1.size() + str2.size() > 1)
 			{
 				m.words.push_back(str1 + str2);
-				m.scores.push_back(tempScore);
+				m.scores.push_back(tempScore*tempMultiplier);
 			}
 		}
 		else break;

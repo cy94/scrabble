@@ -1,4 +1,0 @@
-scrabble
-========
-
-c++ scrabble
