@@ -4,7 +4,7 @@ Installation:
 1. In the scrabble directory, run the command "make compile"
 This will give an executable file "a.out". Run this file by writing "./a.out"
 
-The game will start
+The game will start..:
 
 
 Gameplay:
@@ -12,6 +12,6 @@ Gameplay:
 2. Now input the number corresponding to the square you want to insert the starting letter of the word and press Enter.
 3. Now type either 'h' or 'v' and press Enter for the word to appear horizontally/vertically respectively on the board.
 
-For rules of the game scrabble refer - https://www.scrabblepages.com/scrabble/rules/
+For rules of the scrabble game in detail please refer to  - https://www.scrabblepages.com/scrabble/rules/
 
 Enjoy the game!
